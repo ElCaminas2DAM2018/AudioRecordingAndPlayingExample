@@ -146,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
                 if (grantResults.length > 1
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED
                         && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                    // mediaRecorder.start();
+                    reallyRecordAudio();
                 } else {
 
                     Dialog d = new AlertDialog.Builder(MainActivity.this).setTitle("Error").
