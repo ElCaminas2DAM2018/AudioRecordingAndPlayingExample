@@ -48,7 +48,9 @@ public class MainActivity extends AppCompatActivity {
             stopButton.setEnabled(false);
         }
 
-        audioFilePath =  Environment.getExternalStorageDirectory().getAbsolutePath()
+        // Internal storage
+        // audioFilePath = getFilesDir() + "/myaudio.3gp";
+        audioFilePath = Environment.getExternalStorageDirectory().getAbsolutePath()
                 + "/myaudio.3gp";
     }
 
@@ -58,8 +60,7 @@ public class MainActivity extends AppCompatActivity {
                 PackageManager.FEATURE_MICROPHONE);
     }
 
-    public void recordAudio (View view) throws IOException {
-
+    public void reallyRecordAudio() {
         isRecording = true;
         stopButton.setEnabled(true);
         playButton.setEnabled(false);
@@ -75,17 +76,24 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        mediaRecorder.start();
+    }
+
+    public void recordAudio (View view) throws IOException {
 
         if (ActivityCompat.checkSelfPermission(MainActivity.this,
-                Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED
+            ||  ActivityCompat.checkSelfPermission(MainActivity.this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+        {
 
             Toast.makeText(MainActivity.this, "You don't have permission to record", Toast.LENGTH_SHORT).show();
-            ActivityCompat.requestPermissions(MainActivity.this, new String[] {Manifest.permission.RECORD_AUDIO},
+            ActivityCompat.requestPermissions(MainActivity.this, new String[] {Manifest.permission.RECORD_AUDIO,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     MY_PERMISSIONS_REQUEST_RECORD);
 
         } else {
-            mediaRecorder.start();
-
+            reallyRecordAudio();
         }
 
     }
@@ -115,6 +123,15 @@ public class MainActivity extends AppCompatActivity {
         stopButton.setEnabled(true);
 
         mediaPlayer = new MediaPlayer();
+        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                stopButton.setEnabled(false);
+                playButton.setEnabled(true);
+                recordButton.setEnabled(true);
+
+            }
+        });
         mediaPlayer.setDataSource(audioFilePath);
         mediaPlayer.prepare();
         mediaPlayer.start();
@@ -126,8 +143,9 @@ public class MainActivity extends AppCompatActivity {
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_RECORD: {
                 // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (grantResults.length > 1
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                        && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
                     // mediaRecorder.start();
                 } else {
 
